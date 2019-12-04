@@ -1,7 +1,6 @@
 import Data.List (elemIndex)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
-import Debug.Trace  (traceShowId)
 import Data.Sequence (Seq, takeWhileL, takeWhileR, (><), (<|))
 import Data.Foldable (toList)
 import qualified Data.Sequence as Seq (fromList)
