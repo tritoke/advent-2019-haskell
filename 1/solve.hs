@@ -10,8 +10,9 @@ calc_fuel fuel
 
 main :: IO ()
 main = do
-  contents <- readFile "../inputs/1.in"
-  let numbers = map (read::String->Int) $ lines contents
+  numbers <- map (read::String->Int)
+             . lines
+             <$> readFile "../inputs/1.in"
   let part1   = (sum . map mass_to_fuel) numbers
   let part2   = (sum . map calc_fuel) numbers
   putStr "Part 1: "
