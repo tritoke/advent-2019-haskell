@@ -11,7 +11,7 @@ choose ('0', _) = '0'
 choose ('2', x) =  x
 
 update :: String -> String -> String
-update a b = [ choose x | x <- zip a b]
+update a b = [ choose x | x <- zip a b ]
 
 translate :: String -> String
 translate xs = [ case x of
@@ -22,7 +22,7 @@ main :: IO ()
 main = do
   layers <- (chunk 150) . init <$> readFile "../inputs/8.in"
 
-  let (_, part1) = (minimum . map (\x -> (count '0' x, count '1' x * count '2' x))) layers
+  let part1 = (snd . minimum . map (\x -> (count '0' x, count '1' x * count '2' x))) layers
   let part2 = (unlines . map translate . chunk 25 . (foldr update . take 150 . repeat) '2') layers
 
   putStr "Part 1: "
