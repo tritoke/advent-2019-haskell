@@ -13,7 +13,7 @@ type Intcode = Seq Int
 type Machine = State (Intcode, Int)
 
 setMem :: Int -> Int -> Machine ()
-setMem addr value = modify (first (update addr value))
+setMem addr value = modify $ first $ update addr value
 
 getMem :: Int -> Machine Int
 getMem addr = gets $ (`index` addr) . fst
@@ -44,7 +44,7 @@ runWithParams :: Int -> Int -> Machine Int
 runWithParams a b = setMem 1 a >> setMem 2 b >> run
 
 part1 :: (Intcode, Int) -> Int
-part1 = evalState (runWithParams 12 2)
+part1 = evalState $ runWithParams 12 2
 
 part2 :: (Intcode, Int) -> Int
 part2 input = 100 * noun + verb
