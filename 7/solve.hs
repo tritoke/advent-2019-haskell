@@ -3,35 +3,47 @@
 
 import Control.Arrow                (first, second)
 import Control.Monad.RWS.Strict     (RWS, execRWS)
-import Control.Monad.State.Strict   (gets, get, modify)
+import Control.Monad.Reader         (asks)
 import Control.Monad.Writer.Strict  (tell)
-import Control.Monad.Reader         (ask)
+import Control.Monad.State.Strict   (gets, get, modify)
+import Data.List                    (permutations)
 import Data.List.Split              (splitOn)
 import Data.IntMap.Strict           (IntMap, (!))
 import qualified Data.IntMap.Strict as IntMap
 
 type Intcode = IntMap Int
-type Machine = RWS Int [Int] (Intcode, Int)
+type Machine = RWS [Int] [Int] (Intcode, Int)
 
 main :: IO ()
 main = do
   input <- (, 0)
            . IntMap.fromDistinctAscList
-           . zip [0..]
+           . zip [-1,0..]
+           . (0 :)
            . map (read @Int)
            . splitOn ","
-           <$> readFile "../inputs/5.in"
+           <$> readFile "../inputs/7.in"
 
-  putStr "part1: "
+  putStr "part 1: "
   print $ part1 input
-  putStr "part2: "
-  print $ part2 input
+
+--putStr "part1: "
+--print $ part1 input
+--putStr "part2: "
+--print $ part2 input
 
 part1 :: (Intcode, Int) -> Int
-part1 = last . snd . execRWS run 1
+part1 input = maximum $ map (thruster input 0) $ permutations [0..4]
 
-part2 :: (Intcode, Int) -> Int
-part2 = last . snd . execRWS run 5
+-- use the returned state from execRWS to stop and restore machines
+--part2 :: (Intcode, Int) -> Int
+--part2 = last . snd . execRWS run [5]
+
+thruster :: (Intcode, Int) -> Int -> [Int] -> Int
+thruster code initial settings = foldl (amplifier code) initial settings
+
+amplifier :: (Intcode, Int) -> Int -> Int -> Int
+amplifier code input phase = (last . snd . execRWS run [phase, input]) code
 
 run :: Machine ()
 run = do
@@ -97,8 +109,10 @@ doInput :: Machine ()
 doInput = do
   (code, ip) <- get
   addr <- rawParameter 0
-  value <- ask
+  let inputIndex = code ! (-1)
+  value <- asks (!! inputIndex)
   setMem addr value
+  setMem (-1) (inputIndex + 1)
   advance 2
 
 doOutput :: Int -> Machine ()

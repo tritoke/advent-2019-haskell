@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 import Data.List.Split (splitOn)
 import Data.Sequence hiding (drop)
 
@@ -22,8 +24,9 @@ program noun verb prog = fromList $ head prog : [noun, verb] ++ drop 3 prog
 
 main :: IO ()
 main = do
-  contents <- readFile "../inputs/2.in"
-  let numbers = map (read::String->Int) $ splitOn "," contents
+  numbers <- map (read @Int)
+             . splitOn ","
+             <$> readFile "../inputs/2.in"
   let part1   = execute $ program 12 2 numbers
   let part2   = head [ 100 * noun + verb | noun <- [0..99], 
                                            verb <- [0..99],

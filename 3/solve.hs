@@ -1,3 +1,4 @@
+import Debug.Trace (traceShowId)
 import Data.List (elemIndex)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
@@ -6,15 +7,17 @@ import Data.Foldable (toList)
 import qualified Data.Sequence as Seq (fromList)
 import qualified Data.Set as Set
 
-coordsFromDirection :: Char -> Int -> (Int, Int) -> [(Int, Int)]
-coordsFromDirection dir dist (x, y)
-  | dir == 'L' = [ (x - i, y) | i <- [1..dist] ]
-  | dir == 'D' = [ (x, y - i) | i <- [1..dist] ]
-  | dir == 'U' = [ (x, y + i) | i <- [1..dist] ]
-  | dir == 'R' = [ (x + i, y) | i <- [1..dist] ]
+type Coord = (Int, Int)
 
+coordsFromDirection :: Char -> Int -> Coord -> [Coord]
+coordsFromDirection dir dist (x, y) =
+  case dir of
+    'L' -> [ (n_x, y) | n_x <- [x .. x - dist] ]
+    'D' -> [ (x, n_y) | n_y <- [y .. y - dist] ]
+    'U' -> [ (x, n_y) | n_y <- [y .. y + dist] ]
+    'R' -> [ (n_x, y) | n_x <- [x .. x + dist] ]
 
-updateCoord :: (Int, Int) -> Char -> Int -> (Int, Int)
+updateCoord :: Coord -> Char -> Int -> Coord
 updateCoord (x, y) dir dist =
   case dir of
     'R' -> (x + dist, y)
@@ -22,7 +25,7 @@ updateCoord (x, y) dir dist =
     'U' -> (x, y + dist)
     'D' -> (x, y - dist)
 
-coordsFromPath :: [[Char]] -> (Int, Int) -> [(Int,Int)]
+coordsFromPath :: [[Char]] -> Coord -> [Coord]
 coordsFromPath paths coord
   | not $ null paths = (coordsFromDirection dir dist coord) ++ (coordsFromPath (tail paths) n_coords)
   | otherwise = []
@@ -32,11 +35,14 @@ coordsFromPath paths coord
     dist = read $ tail cmd
     n_coords = updateCoord coord dir dist
 
-manhattenDistance :: (Int, Int) -> Int
+manhattenDistance :: Coord -> Int
 manhattenDistance (x, y) = (abs x) + (abs y)
 
-removeDupe :: (Int, Int) -> Seq (Int, Int) -> Seq (Int, Int)
-removeDupe coord path = (takeWhileL (/= coord) path) >< coord <| coord <| takeWhileR (/= coord) path
+leftDistance :: [Coord] -> Coord -> Int
+leftDistance list elem = (length . takeWhile (/= elem)) list
+
+shortCircuitDistance :: [Coord] -> [Coord] -> Coord -> Int
+shortCircuitDistance a b coord = 2 + leftDistance a coord + leftDistance b coord
 
 main :: IO ()
 main = do
@@ -44,11 +50,8 @@ main = do
   let paths = map (\x -> coordsFromPath x (0,0)) $ map (splitOn ",") $ lines contents
   let path_a = paths !! 0
   let path_b = paths !! 1
-  let crossings = Set.toList $ Set.intersection (Set.fromList path_a) $ Set.fromList path_b
-  let part1 = minimum $ map manhattenDistance crossings
-  let part2 = (minimum $ [ length $ removeDupe x $ Seq.fromList $ path_a ++ reverse path_b | x <- crossings ])
-
-  putStr "Part 1: "
-  print part1
-  putStr "Part 2: "
-  print part2
+  let crossings = Set.intersection (Set.fromList path_a) (Set.fromList path_b)
+  let part1 = (Set.findMin . Set.map manhattenDistance) crossings
+  putStrLn $ "Part 1: " ++ show part1
+  let part2 = (Set.findMin . Set.map (shortCircuitDistance path_a path_b)) crossings
+  putStrLn $ "Part 2: " ++ show part2

@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 mass_to_fuel :: Int -> Int
 mass_to_fuel x = (div x 3) - 2
 
@@ -10,7 +12,7 @@ calc_fuel fuel
 
 main :: IO ()
 main = do
-  numbers <- map (read::String->Int)
+  numbers <- map (read @Int)
              . lines
              <$> readFile "../inputs/1.in"
   let part1   = (sum . map mass_to_fuel) numbers
