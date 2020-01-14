@@ -1,7 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 
-import Data.List.Split (splitOn)
-import Data.Sequence hiding (drop)
+import           Data.List.Split (splitOn)
+import           Data.Sequence   hiding (drop)
 
 op :: Int -> Seq Int -> Seq Int
 op pos nums
@@ -28,9 +28,9 @@ main = do
              . splitOn ","
              <$> readFile "../inputs/2.in"
   let part1   = execute $ program 12 2 numbers
-  let part2   = head [ 100 * noun + verb | noun <- [0..99], 
+  let part2   = head [ 100 * noun + verb | noun <- [0..99],
                                            verb <- [0..99],
-                                          (execute $ program noun verb numbers) == 19690720 ]
+                                          execute (program noun verb numbers) == 19690720 ]
 
   putStr "Part 1: "
   print part1

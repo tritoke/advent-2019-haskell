@@ -1,9 +1,9 @@
-import Data.List (minimumBy)
-import Data.Function (on)
+import           Data.Function (on)
+import           Data.List     (minimumBy)
 
 chunk :: Int -> [a] -> [[a]]
 chunk n [] = []
-chunk n ls = (take n ls) : chunk n (drop n ls)
+chunk n ls = take n ls : chunk n (drop n ls)
 
 count :: Eq a => a -> [a] -> Int
 count n x = length $ filter (== n) x
@@ -20,21 +20,21 @@ translate xs = [ case x of
 
 main :: IO ()
 main = do
-  layers <- (chunk 150) 
+  layers <- chunk 150
             . init
             <$> readFile "../inputs/8.in"
 
-  let minLayer = minimumBy (compare `on` (count '0')) layers
+  let minLayer = minimumBy (compare `on` count '0') layers
 
   let part1 = count '1' minLayer * count '2' minLayer
   let part2 = (unlines
                . map translate
-               . chunk 25 
+               . chunk 25
                . (foldr (zipWith choose)
-                  . take 150 
-                  . repeat) '2') layers
+                  . replicate 150)
+                  '2') layers
 
   putStrLn $ "Part 1: " ++ show part1
 
-  putStrLn "Part 2:" 
+  putStrLn "Part 2:"
   putStrLn part2

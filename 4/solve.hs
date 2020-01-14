@@ -1,12 +1,12 @@
 {-# LANGUAGE TypeApplications #-}
 
-import Data.List.Split (splitOn)
-import Data.List (group)
-import Data.Char (digitToInt)
+import           Data.Char       (digitToInt)
+import           Data.List       (group)
+import           Data.List.Split (splitOn)
 
 pred1 :: String -> Bool
-pred1 [] = True
-pred1 [s] = True
+pred1 []         = True
+pred1 [s]        = True
 pred1 (s1:s2:sx) = s1 <= s2 && pred1 (s2:sx)
 
 pred2 :: String -> Bool
@@ -17,10 +17,10 @@ pred3 = elem 2 . map length . group
 
 main :: IO ()
 main = do
-  range <- map (read @Int)
-           . splitOn "-"
-           <$> readFile "../inputs/4.in"
-  let passwords = map show [(range !! 0)..(range !! 1)]
+  [start, end] <- map (read @Int)
+                  . splitOn "-"
+                  <$> readFile "../inputs/4.in"
+  let passwords = map show [start..end]
 
       part1 = filter (\s -> pred1 s && pred2 s) passwords
       part2 = filter pred3 part1

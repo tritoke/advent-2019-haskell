@@ -1,15 +1,15 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TupleSections    #-}
 {-# LANGUAGE TypeApplications #-}
 
-import Control.Arrow                (first, second)
-import Control.Monad.RWS.Strict     (RWS, execRWS)
-import Control.Monad.Reader         (asks)
-import Control.Monad.Writer.Strict  (tell)
-import Control.Monad.State.Strict   (gets, get, modify)
-import Data.List                    (permutations)
-import Data.List.Split              (splitOn)
-import Data.IntMap.Strict           (IntMap, (!))
-import qualified Data.IntMap.Strict as IntMap
+import           Control.Arrow               (first, second)
+import           Control.Monad.Reader        (asks)
+import           Control.Monad.RWS.Strict    (RWS, execRWS)
+import           Control.Monad.State.Strict  (get, gets, modify)
+import           Control.Monad.Writer.Strict (tell)
+import           Data.IntMap.Strict          (IntMap, (!))
+import qualified Data.IntMap.Strict          as IntMap
+import           Data.List                   (foldl', permutations)
+import           Data.List.Split             (splitOn)
 
 type Intcode = IntMap Int
 type Machine = RWS [Int] [Int] (Intcode, Int)
@@ -27,38 +27,33 @@ main = do
   putStr "part 1: "
   print $ part1 input
 
---putStr "part1: "
---print $ part1 input
---putStr "part2: "
---print $ part2 input
-
 part1 :: (Intcode, Int) -> Int
-part1 input = maximum $ map (thruster input 0) $ permutations [0..4]
+part1 input = maximum $ map (thruster input) $ permutations [0..4]
 
 -- use the returned state from execRWS to stop and restore machines
 --part2 :: (Intcode, Int) -> Int
 --part2 = last . snd . execRWS run [5]
 
-thruster :: (Intcode, Int) -> Int -> [Int] -> Int
-thruster code initial settings = foldl (amplifier code) initial settings
+thruster :: (Intcode, Int) -> [Int] -> Int
+thruster code = foldl' (amplifier code) 0
 
 amplifier :: (Intcode, Int) -> Int -> Int -> Int
 amplifier code input phase = (last . snd . execRWS run [phase, input]) code
 
 run :: Machine ()
 run = do
-  (modes, opcode) <- ((flip divMod) 100) <$> fetchOp
+  (modes, opcode) <- flip divMod 100 <$> fetchOp
   case opcode of
-    1 -> doMath modes (+) >> run
-    2 -> doMath modes (*) >> run
-    3 -> doInput >> run
-    4 -> doOutput modes >> run
-    5 -> doJump modes (/= 0) >> run
-    6 -> doJump modes (== 0) >> run
-    7 -> doMath modes (cmp (<))  >> run
-    8 -> doMath modes (cmp (==)) >> run
+    1  -> doMath modes (+) >> run
+    2  -> doMath modes (*) >> run
+    3  -> doInput >> run
+    4  -> doOutput modes >> run
+    5  -> doJump modes (/= 0) >> run
+    6  -> doJump modes (== 0) >> run
+    7  -> doMath modes (cmp (<))  >> run
+    8  -> doMath modes (cmp (==)) >> run
     99 -> return ()
-    _ -> error $ "Unknown opcode: " ++ show opcode
+    _  -> error $ "Unknown opcode: " ++ show opcode
 
 setMem :: Int -> Int -> Machine ()
 setMem addr value = modify $ first $ IntMap.insert addr value
@@ -83,13 +78,13 @@ parseParameter modes position = do
   (code, ip) <- get
   let p = code ! (ip + position + 1)
   case getDigit modes position of
-    0 -> return $ code ! p
-    1 -> return p
+    0     -> return $ code ! p
+    1     -> return p
     digit -> error $ "Invalid mode digit: " ++ show digit
 
 rawParameter :: Int -> Machine Int
 rawParameter position = gets (\(code, ip) -> code ! (ip + position + 1))
-  
+
 cmp :: (Int -> Int -> Bool) -> Int -> Int -> Int
 cmp op a b
   | op a b    = 1

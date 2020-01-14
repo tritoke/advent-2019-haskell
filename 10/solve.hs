@@ -1,6 +1,6 @@
-import Data.Complex
+import           Data.Complex
 
-import Data.HashMap.Strict (HashMap)
+import           Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as HashMap
 
 type Position = (Double, Double)
@@ -33,6 +33,6 @@ main = do
                       y <- [0 .. (pred . length . head) field],
                       field !! y !! x == '#']
 
-  let (part1, base) = maximum $ [ (canSee asteroids base, base) | base <- asteroids ]
+  let (part1, base) = maximum [ (canSee asteroids base, base) | base <- asteroids ]
   print base
   print part1

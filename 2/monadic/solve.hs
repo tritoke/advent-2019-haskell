@@ -71,5 +71,5 @@ main = do
            . splitOn ","
            <$> readFile "../../inputs/2.in"
 
-  print $ part1 input
---print $ part2 input
+  putStrLn $ "Part 1: " ++ show (part1 input)
+  putStrLn $ "Part 2: " ++ show (part2 input)
